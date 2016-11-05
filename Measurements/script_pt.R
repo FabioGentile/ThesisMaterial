@@ -195,46 +195,45 @@ read.from.zip <- function(zipfilename, skip = 1, n = NA) {
 
 ##################################
 
-mysummary <- function(object, ...) {
+mysummary <- function(object, outfile = "", ...) {
     x <- object
-    cat("Power Trace Analysis\n\n")
+    cat("Power Trace Analysis\n\n", file = outfile, append = TRUE)
     d = as.difftime(x$n * x$t, units = "secs")
     if (d >= as.difftime("0:1:0")) {
         units(d) <- "mins"
     }
-    cat("Trace:", x$n, "samples, at ", 1/x$t, "Hz (elapsed,", format(d, 
-        digits = 2), ")", "\n")
-    cat("Identified:", dim(x$work)[1], "cycles")
+    cat("Trace:", x$n, "samples, at ", 1/x$t, "Hz (elapsed,", format(d, digits = 2), ")", "\n", file = outfile, append = TRUE)
+    cat("Identified:", dim(x$work)[1], "cycles", file = outfile, append = TRUE)
     n.valid = sum(!is.na(x$work$P))
     if (n.valid != dim(x$work)[1]) {
         nd = sum(is.na(x$work$duration))
         np = dim(x$work)[1] - n.valid - nd
         cat(" (", n.valid, "with valid power values:\n\t\t\t", nd, "invalid due to anomalous duration,\n\t\t\t", 
-            np, "invalid due to negative effective power)\n\n")
+            np, "invalid due to negative effective power)\n\n", file = outfile, append = TRUE)
     } else {
-        cat(" (all valid)\n\n")
+        cat(" (all valid)\n\n", file = outfile, append = TRUE)
     }
     # cat('\nAll data outliers:\n')
-    cat("Baseline method: ", x$baseline, "\n")
+    cat("Baseline method: ", x$baseline, "\n", file = outfile, append = TRUE)
     with(x$work, {
         cat("  Power: mean=", format(mean(P, na.rm = TRUE), digits = 3), 
             " sd=", format(sd(P, na.rm = TRUE), digits = 3), " (", round(sd(P, 
                 na.rm = TRUE)/mean(P, na.rm = TRUE) * 100, 1), "%)\n", 
-            sep = "")
+            sep = "", file = outfile, append = TRUE)
         cat("         95%CI=(", paste(format(quantile(P, c(0.025, 0.975), 
-            na.rm = T), digits = 3), collapse = " ; "), ")\n\n")
+            na.rm = T), digits = 3), collapse = " ; "), ")\n\n", file = outfile, append = TRUE)
         cat("   Time: mean=", format(mean(duration, na.rm = TRUE), digits = 3), 
             " sd=", format(sd(duration, na.rm = TRUE), digits = 3), " (", 
             round(sd(duration, na.rm = TRUE)/mean(duration, na.rm = TRUE) * 
-                100, 1), "%)\n", sep = "")
+                100, 1), "%)\n", sep = "", file = outfile, append = TRUE)
         cat("         95%CI=(", paste(format(quantile(duration, c(0.025, 
-            0.975), na.rm = T), digits = 3), collapse = " ; "), ")\n\n")
+            0.975), na.rm = T), digits = 3), collapse = " ; "), ")\n\n", file = outfile, append = TRUE)
         cat(" Energy: mean=", format(mean(E, na.rm = TRUE), digits = 3), 
             " sd=", format(sd(E, na.rm = TRUE), digits = 3), " (", round(sd(E, 
                 na.rm = TRUE)/mean(E, na.rm = TRUE) * 100, 1), "%)\n", 
-            sep = "")
+            sep = "", file = outfile, append = TRUE)
         cat("         95%CI=(", paste(format(quantile(E, c(0.025, 0.975), 
-            na.rm = T), digits = 3), collapse = " ; "), ")\n\n")
+            na.rm = T), digits = 3), collapse = " ; "), ")\n\n", file = outfile, append = TRUE)
     })
     pars = list(...)
     remove.outliers = FALSE
@@ -242,20 +241,20 @@ mysummary <- function(object, ...) {
         remove.outliers = pars$remove.outliers
     }
     if (remove.outliers) {
-        cat("\nWithout outliers:\n")
+        cat("\nWithout outliers:\n", file = outfile, append = TRUE)
         ol = outliers(x$work$P, logic = T) | outliers(x$work$duration, 
             logic = T) | outliers(x$work$E, logic = T)
         with(subset(x$work, !ol), {
             cat("  Power: mean=", mean(P, na.rm = TRUE), " sd=", sd(P, 
                 na.rm = TRUE), " (", round(sd(P, na.rm = TRUE)/mean(P, 
-                na.rm = TRUE) * 100, 1), "%)\n", sep = "")
+                na.rm = TRUE) * 100, 1), "%)\n", sep = "", file = outfile, append = TRUE)
             cat("         95%CI=(", paste(format(quantile(P, c(0.025, 0.975), 
-                na.rm = T), digits = 3), collapse = " ; "), ")\n")
+                na.rm = T), digits = 3), collapse = " ; "), ")\n", file = outfile, append = TRUE)
             cat(" Energy: mean=", mean(E, na.rm = TRUE), " sd=", sd(E, 
                 na.rm = TRUE), " (", round(sd(E, na.rm = TRUE)/mean(E, 
-                na.rm = TRUE) * 100, 1), "%)\n", sep = "")
+                na.rm = TRUE) * 100, 1), "%)\n", sep = "", file = outfile, append = TRUE)
             cat("         95%CI=(", paste(format(quantile(E, c(0.025, 0.975), 
-                na.rm = T), digits = 3), collapse = " ; "), ")\n")
+                na.rm = T), digits = 3), collapse = " ; "), ")\n", file = outfile, append = TRUE)
         })
     }
     # cat(' Thoughput: ', (x$n / as.double(x$elapsed,units='secs') * 1e-6),
@@ -277,10 +276,13 @@ filename_plain = paste(dirname, "/out.csv", sep = "")
 filename_zip = paste(dirname, "/out.zip", sep = "")
 outfile_app = paste(dirname, "/pt_app", OUTFILE_EXT, sep = "")
 outfile_all = paste(dirname, "/pt_all", OUTFILE_EXT, sep = "")
+outfile_summary_app = paste(dirname, "/summary_app.txt", sep = "")
+outfile_summary_all = paste(dirname, "/summary_all.txt", sep = "")
 
 ################################## 
 
-
+file.remove(outfile_summary_all)
+file.remove(outfile_summary_app)
 
 if (file.exists(filename_zip)) {
     samples = read.from.zip(filename_zip)
@@ -297,19 +299,15 @@ if (file.exists(filename_zip)) {
 # samples/1000
 
 res = extract.power(samples$Pall/1000, period, marker.length = MARKER_LENGTH, adjust = adjust_param)
-print("-------------------")
-mysummary(res)
-print("-------------------")
+mysummary(res, outfile=outfile_summary_all)
+# summary(res)
 pdf(file = outfile_all)
 myplot(res)
 dev.off()
 
-# res = extract.power(samples$Papp/1000, period, marker.length = MARKER_LENGTH, adjust = adjust_param)
+res = extract.power(samples$Papp/1000, period, marker.length = MARKER_LENGTH, adjust = adjust_param)
+mysummary(res, outfile=outfile_summary_app)
 # summary(res)
-# pdf(file = outfile_app)
-# myplot(res)
-# dev.off()
-
-# extract.power(samples/1000, period, marker.length=7, include.rawdata=TRUE) res
-# = extract.power(samples/1000, period, marker.length=7, include.rawdata=TRUE)
-# #res plot(res) summary(res)
+pdf(file = outfile_app)
+myplot(res)
+dev.off()

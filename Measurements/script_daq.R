@@ -2,7 +2,8 @@
 
 library(powtran)
 
-################################## 
+##################################
+
 myplot <- function(x, work.unit = NULL, highlight = NULL, main = NULL, ...) {
     P <- NULL  ## to mute down NOTE from R CMD check
     start <- end <- NULL  # to mute down CMD check
@@ -165,6 +166,7 @@ myplot <- function(x, work.unit = NULL, highlight = NULL, main = NULL, ...) {
     layout(1)
     par(mar = push.mar)
 }
+
 ################################## 
 
 read.from.zip <- function(zipfilename, skip = 1, n = NA) {
@@ -188,6 +190,74 @@ read.from.zip <- function(zipfilename, skip = 1, n = NA) {
     return(samples)
 }
 
+##################################
+
+mysummary <- function(object, outfile = "", ...) {
+    x <- object
+    cat("Power Trace Analysis\n\n", file = outfile, append = TRUE)
+    d = as.difftime(x$n * x$t, units = "secs")
+    if (d >= as.difftime("0:1:0")) {
+        units(d) <- "mins"
+    }
+    cat("Trace:", x$n, "samples, at ", 1/x$t, "Hz (elapsed,", format(d, digits = 2), ")", "\n", file = outfile, append = TRUE)
+    cat("Identified:", dim(x$work)[1], "cycles", file = outfile, append = TRUE)
+    n.valid = sum(!is.na(x$work$P))
+    if (n.valid != dim(x$work)[1]) {
+        nd = sum(is.na(x$work$duration))
+        np = dim(x$work)[1] - n.valid - nd
+        cat(" (", n.valid, "with valid power values:\n\t\t\t", nd, "invalid due to anomalous duration,\n\t\t\t", 
+            np, "invalid due to negative effective power)\n\n", file = outfile, append = TRUE)
+    } else {
+        cat(" (all valid)\n\n", file = outfile, append = TRUE)
+    }
+    # cat('\nAll data outliers:\n')
+    cat("Baseline method: ", x$baseline, "\n", file = outfile, append = TRUE)
+    with(x$work, {
+        cat("  Power: mean=", format(mean(P, na.rm = TRUE), digits = 3), 
+            " sd=", format(sd(P, na.rm = TRUE), digits = 3), " (", round(sd(P, 
+                na.rm = TRUE)/mean(P, na.rm = TRUE) * 100, 1), "%)\n", 
+            sep = "", file = outfile, append = TRUE)
+        cat("         95%CI=(", paste(format(quantile(P, c(0.025, 0.975), 
+            na.rm = T), digits = 3), collapse = " ; "), ")\n\n", file = outfile, append = TRUE)
+        cat("   Time: mean=", format(mean(duration, na.rm = TRUE), digits = 3), 
+            " sd=", format(sd(duration, na.rm = TRUE), digits = 3), " (", 
+            round(sd(duration, na.rm = TRUE)/mean(duration, na.rm = TRUE) * 
+                100, 1), "%)\n", sep = "", file = outfile, append = TRUE)
+        cat("         95%CI=(", paste(format(quantile(duration, c(0.025, 
+            0.975), na.rm = T), digits = 3), collapse = " ; "), ")\n\n", file = outfile, append = TRUE)
+        cat(" Energy: mean=", format(mean(E, na.rm = TRUE), digits = 3), 
+            " sd=", format(sd(E, na.rm = TRUE), digits = 3), " (", round(sd(E, 
+                na.rm = TRUE)/mean(E, na.rm = TRUE) * 100, 1), "%)\n", 
+            sep = "", file = outfile, append = TRUE)
+        cat("         95%CI=(", paste(format(quantile(E, c(0.025, 0.975), 
+            na.rm = T), digits = 3), collapse = " ; "), ")\n\n", file = outfile, append = TRUE)
+    })
+    pars = list(...)
+    remove.outliers = FALSE
+    if ("remove.outliers" %in% names(pars)) {
+        remove.outliers = pars$remove.outliers
+    }
+    if (remove.outliers) {
+        cat("\nWithout outliers:\n", file = outfile, append = TRUE)
+        ol = outliers(x$work$P, logic = T) | outliers(x$work$duration, 
+            logic = T) | outliers(x$work$E, logic = T)
+        with(subset(x$work, !ol), {
+            cat("  Power: mean=", mean(P, na.rm = TRUE), " sd=", sd(P, 
+                na.rm = TRUE), " (", round(sd(P, na.rm = TRUE)/mean(P, 
+                na.rm = TRUE) * 100, 1), "%)\n", sep = "", file = outfile, append = TRUE)
+            cat("         95%CI=(", paste(format(quantile(P, c(0.025, 0.975), 
+                na.rm = T), digits = 3), collapse = " ; "), ")\n", file = outfile, append = TRUE)
+            cat(" Energy: mean=", mean(E, na.rm = TRUE), " sd=", sd(E, 
+                na.rm = TRUE), " (", round(sd(E, na.rm = TRUE)/mean(E, 
+                na.rm = TRUE) * 100, 1), "%)\n", sep = "", file = outfile, append = TRUE)
+            cat("         95%CI=(", paste(format(quantile(E, c(0.025, 0.975), 
+                na.rm = T), digits = 3), collapse = " ; "), ")\n", file = outfile, append = TRUE)
+        })
+    }
+    # cat(' Thoughput: ', (x$n / as.double(x$elapsed,units='secs') * 1e-6),
+    # 'M samples per sec\n' )
+}
+
 ########## FIXTURES ############
 period = 1/1000
 ################################ 
@@ -203,8 +273,11 @@ dirname = args[1]
 filename_plain = paste(dirname, "Power.txt", sep = "/")
 filename_zip = paste(dirname, "Power.zip", sep = "/")
 outfile = paste(dirname, "daq.pdf", sep = "/")
+outfile_summary = paste(dirname, "/summary_daq.txt", sep = "")
 
 ################################## 
+
+file.remove(outfile_summary)
 
 if (file.exists(filename_zip)) {
     print("ZIP")
@@ -220,16 +293,10 @@ if (file.exists(filename_zip)) {
         q()
     }
 }
+
 res = extract.power(samples, period, marker.length = 8)
-
-summary(res)
-
+mysummary(res, outfile=outfile_summary)
+# summary(res)
 pdf(file = outfile)
-myplot(res)
+plot(res)
 dev.off()
-
-# samples = read.from.zip(filename_zip) samples = read.table(filename, dec='.',
-# header=TRUE, col.names='P', skip=0) samples/1000
-
-# res = extract.power(samples/1000, period, marker.length=7,
-# include.rawdata=TRUE) #res plot(res) summary(res)

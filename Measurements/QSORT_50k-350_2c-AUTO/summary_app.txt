@@ -1,0 +1,17 @@
+Power Trace Analysis
+
+Trace: 969 samples, at  1 Hz (elapsed, 16 mins ) 
+Identified: 33 cycles ( 24 with valid power values:
+			 9 invalid due to anomalous duration,
+			 0 invalid due to negative effective power)
+
+Baseline method:  gmin 
+  Power: mean=1.07 sd=0.462 (43.1%)
+         95%CI=( 0.348 ; 1.836 )
+
+   Time: mean=9.88 sd=1.45 (14.7%)
+         95%CI=(  7 ; 12 )
+
+ Energy: mean=10.6 sd=4.79 (45%)
+         95%CI=(  2.7 ; 18.4 )
+

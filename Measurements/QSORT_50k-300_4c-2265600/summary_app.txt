@@ -1,0 +1,15 @@
+Power Trace Analysis
+
+Trace: 954 samples, at  1 Hz (elapsed, 16 mins ) 
+Identified: 30 cycles (all valid)
+
+Baseline method:  gmin 
+  Power: mean=0.742 sd=0.0323 (4.4%)
+         95%CI=( 0.688 ; 0.780 )
+
+   Time: mean=9.03 sd=0.183 (2%)
+         95%CI=( 9.00 ; 9.27 )
+
+ Energy: mean=6.7 sd=0.281 (4.2%)
+         95%CI=( 6.19 ; 7.02 )
+

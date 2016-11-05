@@ -8,8 +8,8 @@ Where
 
 *   `ALGORITHM`: the sorting algorithm used.
 *   `SIZE`: the size of the array to be sorted.
-*   `REP`: the number of times the array must be sorted
-*   `CORE`: the number of active cores on the CPU
+*   `REP`: the number of times the array must be sorted.
+*   `CORE`: the number of active cores on the CPU.
 *   `FREQ`: operating frequency for the cores. `AUTO` means that the governor used is `ondemand`, so the frequency is automatically scaled.
 
 ## Script_daq.R
