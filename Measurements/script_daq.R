@@ -258,8 +258,53 @@ mysummary <- function(object, outfile = "", ...) {
     # 'M samples per sec\n' )
 }
 
+csv.summary <- function(object, outfile = "", ...) {
+    return
+    x <- object
+    d = as.difftime(x$n * x$t, units = "secs")
+    if (d >= as.difftime("0:1:0")) {
+        units(d) <- "mins"
+    }
+    n.valid = sum(!is.na(x$work$P))
+    if (n.valid != dim(x$work)[1]) {
+        nd = sum(is.na(x$work$duration))
+        np = dim(x$work)[1] - n.valid - nd
+        # cat(" (", n.valid, "with valid power values:\n\t\t\t", nd, "invalid due to anomalous duration,\n\t\t\t", 
+            # np, "invalid due to negative effective power)\n\n", file = outfile, append = TRUE)
+    } else {
+        # cat(" (all valid)\n\n", file = outfile, append = TRUE)
+    }
+    # cat('\nAll data outliers:\n')
+    # cat("Baseline method: ", x$baseline, "\n", file = outfile, append = TRUE)
+    with(x$work, {
+        cat(format.dirname(dirname), ",", file = outfile, append = TRUE)
+        
+        # cat("  Power: mean=", format(mean(P, na.rm = TRUE), digits = 3), 
+        #     " sd=", format(sd(P, na.rm = TRUE), digits = 3), " (", round(sd(P, 
+        #         na.rm = TRUE)/mean(P, na.rm = TRUE) * 100, 1), "%)\n", 
+        #     sep = "", file = outfile, append = TRUE)
+        # cat("         95%CI=(", paste(format(quantile(P, c(0.025, 0.975), 
+        #     na.rm = T), digits = 3), collapse = " ; "), ")\n\n", file = outfile, append = TRUE)
+
+        # cat("   Time: mean=", format(mean(duration, na.rm = TRUE), digits = 3), 
+        #     " sd=", format(sd(duration, na.rm = TRUE), digits = 3), " (", 
+        #     round(sd(duration, na.rm = TRUE)/mean(duration, na.rm = TRUE) * 
+        #         100, 1), "%)\n", sep = "", file = outfile, append = TRUE)
+        # cat("         95%CI=(", paste(format(quantile(duration, c(0.025, 
+        #     0.975), na.rm = T), digits = 3), collapse = " ; "), ")\n\n", file = outfile, append = TRUE)
+
+        cat(format(mean(E, na.rm = TRUE), digits = 3), "\n",  file = outfile, append = TRUE)
+    })
+}
+
+##################################
+
+format.dirname <- function (x) gsub("/", "", trimws(x))
+
 ########## FIXTURES ############
 period = 1/1000
+
+csv_outfilename = "daq.csv"
 ################################ 
 
 args <- commandArgs(trailingOnly = TRUE)
@@ -295,8 +340,9 @@ if (file.exists(filename_zip)) {
 }
 
 res = extract.power(samples, period, marker.length = 8)
-mysummary(res, outfile=outfile_summary)
+mysummary(res, outfile = outfile_summary)
+csv.summary(res, outfile = csv_outfilename)
 # summary(res)
 pdf(file = outfile)
-plot(res)
+myplot(res)
 dev.off()

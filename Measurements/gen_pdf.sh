@@ -12,6 +12,7 @@ crop_pdf(){
 
 }
 
+
 if [ "$#" -eq 1 ]; then
 	 ./script_daq.R $1
 	crop_pdf "$1/daq.pdf"
@@ -19,6 +20,8 @@ if [ "$#" -eq 1 ]; then
 	crop_pdf "$1/pt_all.pdf" "$1/pt_app.pdf"
   exit 0
 fi
+
+rm -f "all.csv" "app.csv" "daq.csv"
 
 for dir in `find . ! -path . -type d | grep -v "git"`
 do
