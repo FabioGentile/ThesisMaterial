@@ -23,6 +23,14 @@ fi
 
 rm -f "all.csv" "app.csv" "daq.csv"
 
+echo "\#,Power(W),\$\delta_{power}$,Duration(s),\$\delta_{duration}\$,Energy(J),\$\delta_{energy}\$" > "app.csv"
+echo "\#,Power(W),\$\delta_{power}$,Duration(s),\$\delta_{duration}\$,Energy(J),\$\delta_{energy}\$" > "all.csv"
+echo "\#,Power(W),\$\delta_{power}$,Duration(s),\$\delta_{duration}\$,Energy(J),\$\delta_{energy}\$" > "daq.csv"
+
+# echo "Config,Power(W),\$\delta_{Power}$,\$\delta_{Power}\$\%,Duration(s),\$\delta_{Duration}\$,\$\delta_{Duration}\$\%,Energy(J),\$\delta_{Energy}\$,\$\delta_{Energy}\$%" > "app.csv"
+# echo "Config,Power(W),\$\delta_{Power}$,\$\delta_{Power}\$\%,Duration(s),\$\delta_{Duration}\$,\$\delta_{Duration}\$\%,Energy(J),\$\delta_{Energy}\$,\$\delta_{Energy}\$%" > "all.csv"
+# echo "Config,Power(W),\$\delta_{Power}$,\$\delta_{Power}\$\%,Duration(s),\$\delta_{Duration}\$,\$\delta_{Duration}\$\%,Energy(J),\$\delta_{Energy}\$,\$\delta_{Energy}\$%" > "daq.csv"
+
 for dir in `find . ! -path . -type d | grep -v "git"`
 do
 	echo $dir
