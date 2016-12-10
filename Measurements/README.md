@@ -28,3 +28,7 @@ Where `FOLDER_NAME` is the location where are stored the data.
 A shell script that launch the R script on all the folder if no parameters are specified. Otherwise launch the scripts only on the specified folder. Usage:
 
     ./gen_pdf.sh [FOLDER_NAME]
+
+## Multimedia
+
+In this folders there are the measurements and analysis from our experiments with multimedia applications.
